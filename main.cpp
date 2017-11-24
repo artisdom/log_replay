@@ -6,12 +6,11 @@
 
 using namespace std;
 
-const int KEY_SPACE = 0x20;
-const int KEY_f = 0x66;
-const int KEY_b = 0x62;
-
-const int KEY_F = 0x46;
-const int KEY_B = 0x42;
+const int KEY_SPACE = ' ';
+const int KEY_F = 'f';
+const int KEY_B = 'b';
+const int KEY_J = 'j';
+const int KEY_N = 'n';
 
 char getch() {
     char buf = 0;
@@ -40,6 +39,8 @@ char getch() {
 
 int ACTION_PAUSED = 0;
 int ACTION_SPEEDUP = 0;
+int ACTION_NEXTLINE = 0;
+
 //int ACTION_SLOWDOWN = 0;
 
 int get_action()
@@ -65,13 +66,13 @@ int get_action()
             printf("B key pressed.\n");
             ACTION_SPEEDUP--;
             break;
-        case KEY_f:
-            printf("f key pressed.\n");
-            ACTION_SPEEDUP++;
+        case KEY_J:
+            //printf("J key pressed.\n");
+            ACTION_NEXTLINE++;
             break;
-        case KEY_b:
-            printf("b key pressed.\n");
-            ACTION_SPEEDUP--;
+        case KEY_N:
+            //printf("N key pressed.\n");
+            ACTION_NEXTLINE++;
             break;
         }
     }
@@ -88,11 +89,21 @@ int log_replay(char *filepath)
 
     for (string line; std::getline(filein, line); )
     {
-        while (ACTION_PAUSED) {
-            usleep(100);
+        if (ACTION_PAUSED) {
+            while (ACTION_PAUSED) {
+                if (ACTION_NEXTLINE) {
+                    usleep(300000);
+                    cout << line << endl;
+                    ACTION_NEXTLINE--;
+                    break;
+                } else {
+                    usleep(100);
+                }
+            }
+        } else {
+            usleep(300000);
+            cout << line << endl;
         }
-        usleep(300000);
-        cout << line << endl;
     }
 
     filein.close();
