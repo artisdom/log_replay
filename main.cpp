@@ -131,6 +131,8 @@ int log_replay(char *filepath)
 
     for (string line; std::getline(filein, line); )
     {
+        cout << line << endl;
+
         if (ACTION_PAUSED) {
             while (ACTION_PAUSED) {
                 if (ACTION_NEXTLINE) {
@@ -152,7 +154,6 @@ int log_replay(char *filepath)
             break;
         } else {
             usleep(300000);
-            cout << line << endl;
         }
     }
 
