@@ -5,9 +5,42 @@
 #include <termios.h>
 #include <sys/stat.h>
 #include <boost/filesystem.hpp>
+#include <boost/date_time.hpp>
 
 using namespace std;
 namespace fs = boost::filesystem;
+namespace bt = boost::posix_time;
+
+const std::locale formats[] = {
+    std::locale(std::locale::classic(), new bt::time_input_facet("%Y-%m-%d %H:%M:%S")),
+    std::locale(std::locale::classic(), new bt::time_input_facet("%Y/%m/%d %H:%M:%S")),
+    std::locale(std::locale::classic(), new bt::time_input_facet("%d.%m.%Y %H:%M:%S")),
+    std::locale(std::locale::classic(), new bt::time_input_facet("%Y-%m-%d")),
+    std::locale(std::locale::classic(), new bt::time_input_facet("%b %d %H:%M:%S%F")),
+};
+
+const size_t formats_n = sizeof(formats) / sizeof(formats[0]);
+
+const long MAX_INTERVIAL = 1000000; //1s
+
+bool get_ptime(const std::string &s, bt::ptime& pt)
+{
+    bool res = false;
+
+    for (size_t i = 0; i < formats_n; ++i) {
+
+        std::istringstream is(s);
+        is.imbue(formats[i]);
+        is >> pt;
+
+        if (pt != bt::ptime()) {
+            res = true;
+            //std::cout << " ptime is " << pt << '\n';
+            break;
+        }
+    }
+    return res;
+}
 
 const int KEY_SPACE = ' ';
 const int KEY_F = 'f';
@@ -84,6 +117,8 @@ int get_action()
     }
 }
 
+bt::ptime last_ptime;
+
 fs::path home_dir(getenv("HOME"));
 const string CONFIG_DIR_NAME = ".log_replay";
 fs::path config_dir = home_dir / CONFIG_DIR_NAME;
@@ -131,6 +166,29 @@ int log_replay(char *filepath)
 
     for (string line; std::getline(filein, line); )
     {
+        bt::ptime pt;
+        bool found_timestamp = get_ptime(line, pt);
+
+        if (found_timestamp) {
+            bt::time_duration td = pt - last_ptime;
+            long microseconds = td.total_microseconds();
+
+            last_ptime = pt;
+
+            if (microseconds < 0) {
+                microseconds = 0;
+            } else if (microseconds > MAX_INTERVIAL) {
+                microseconds = MAX_INTERVIAL;
+            }
+
+            //cout << "pt: " << pt << "\n";
+            //cout << "microseconds: " << microseconds << "\n";
+
+            usleep(microseconds);
+        } else {
+            usleep(300000);
+        }
+
         cout << line << endl;
 
         if (ACTION_PAUSED) {
@@ -152,8 +210,6 @@ int log_replay(char *filepath)
             f << filein.tellg();
             f.close();
             break;
-        } else {
-            usleep(300000);
         }
     }
 
