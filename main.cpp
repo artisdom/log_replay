@@ -133,7 +133,7 @@ int get_action()
             ACTION_SPEEDUP--;
             break;
         case KEY_A:
-            printf("A key pressed.\n");
+            //printf("A key pressed.\n");
             ACTION_ACCELERATE++;
             if (MAX_INTERVIAL_CURRENT > MAX_INTERVIAL_INCREASE_STEP) {
                 MAX_INTERVIAL_CURRENT -= MAX_INTERVIAL_INCREASE_STEP;
@@ -143,13 +143,13 @@ int get_action()
             }
             break;
         case KEY_D:
-            printf("D key pressed.\n");
+            //printf("D key pressed.\n");
             ACTION_DECELERATE++;
             MAX_INTERVIAL_CURRENT += MAX_INTERVIAL_INCREASE_STEP;
             DEFAULT_INTERVIAL_CURRENT += DEFAULT_INTERVIAL_INCREASE_STEP;
             break;
         case KEY_R:
-            printf("R key pressed.\n");
+            //printf("R key pressed.\n");
             ACTION_RESET = 1;
             MAX_INTERVIAL_CURRENT = MAX_INTERVIAL;
             DEFAULT_INTERVIAL_CURRENT = DEFAULT_INTERVIAL;
