@@ -32,7 +32,8 @@ const std::locale formats[] = {
     std::locale(std::locale::classic(), new bt::time_input_facet("%Y/%m/%d %H:%M:%S")),
     std::locale(std::locale::classic(), new bt::time_input_facet("%d.%m.%Y %H:%M:%S")),
     std::locale(std::locale::classic(), new bt::time_input_facet("%Y-%m-%d")),
-    std::locale(std::locale::classic(), new bt::time_input_facet("%b %d %H:%M:%S%F")),
+    std::locale(std::locale::classic(), new bt::time_input_facet("%b %d %H:%M:%S%F")), //Nov 13 00:30:35.593
+    std::locale(std::locale::classic(), new bt::time_input_facet("%b   %H:%M:%S%F")), //Nov 2 19:36:01.479 // day is only one digit, which boost doesn't support, use space to skip it.
 };
 
 const size_t formats_n = sizeof(formats) / sizeof(formats[0]);
