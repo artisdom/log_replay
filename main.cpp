@@ -38,6 +38,12 @@ const std::locale formats[] = {
 const size_t formats_n = sizeof(formats) / sizeof(formats[0]);
 
 const long MAX_INTERVIAL = 1000000; //1s
+long MAX_INTERVIAL_CURRENT = MAX_INTERVIAL;
+const long MAX_INTERVIAL_INCREASE_STEP = 1000000; //1s
+
+const long DEFAULT_INTERVIAL = 300000; //300ms
+const long DEFAULT_INTERVIAL_INCREASE_STEP = 300000; //300ms
+long DEFAULT_INTERVIAL_CURRENT = DEFAULT_INTERVIAL;
 
 bool get_ptime(const std::string &s, bt::ptime& pt)
 {
@@ -58,12 +64,15 @@ bool get_ptime(const std::string &s, bt::ptime& pt)
     return res;
 }
 
-const int KEY_SPACE = ' ';
+const int KEY_SPACE = ' '; // for pause
 const int KEY_F = 'f';
 const int KEY_B = 'b';
-const int KEY_J = 'j';
-const int KEY_N = 'n';
-const int KEY_Q = 'q';
+const int KEY_J = 'j'; // next line
+const int KEY_N = 'n'; // next line
+const int KEY_Q = 'q'; // quit
+const int KEY_R = 'r'; // reset default interval
+const int KEY_A = 'a'; // accelerate
+const int KEY_D = 'd'; // decelerate
 
 char getch() {
     char buf = 0;
@@ -92,8 +101,11 @@ char getch() {
 
 int ACTION_PAUSED = 0;
 int ACTION_SPEEDUP = 0;
+int ACTION_ACCELERATE = 0;
+int ACTION_DECELERATE = 0;
 int ACTION_NEXTLINE = 0;
 int ACTION_QUIT = 0;
+int ACTION_RESET = 0;
 
 //int ACTION_SLOWDOWN = 0;
 
@@ -119,6 +131,28 @@ int get_action()
         case KEY_B:
             printf("B key pressed.\n");
             ACTION_SPEEDUP--;
+            break;
+        case KEY_A:
+            printf("A key pressed.\n");
+            ACTION_ACCELERATE++;
+            if (MAX_INTERVIAL_CURRENT > MAX_INTERVIAL_INCREASE_STEP) {
+                MAX_INTERVIAL_CURRENT -= MAX_INTERVIAL_INCREASE_STEP;
+            }
+            if (DEFAULT_INTERVIAL_CURRENT > DEFAULT_INTERVIAL_INCREASE_STEP) {
+                DEFAULT_INTERVIAL_CURRENT -= DEFAULT_INTERVIAL_INCREASE_STEP;
+            }
+            break;
+        case KEY_D:
+            printf("D key pressed.\n");
+            ACTION_DECELERATE++;
+            MAX_INTERVIAL_CURRENT += MAX_INTERVIAL_INCREASE_STEP;
+            DEFAULT_INTERVIAL_CURRENT += DEFAULT_INTERVIAL_INCREASE_STEP;
+            break;
+        case KEY_R:
+            printf("R key pressed.\n");
+            ACTION_RESET = 1;
+            MAX_INTERVIAL_CURRENT = MAX_INTERVIAL;
+            DEFAULT_INTERVIAL_CURRENT = DEFAULT_INTERVIAL;
             break;
         case KEY_J:
             ACTION_NEXTLINE++;
@@ -193,8 +227,8 @@ int log_replay(char *filepath)
 
             if (microseconds < 0) {
                 microseconds = 0;
-            } else if (microseconds > MAX_INTERVIAL) {
-                microseconds = MAX_INTERVIAL;
+            } else if (microseconds > MAX_INTERVIAL_CURRENT) {
+                microseconds = MAX_INTERVIAL_CURRENT;
             }
 
             //cout << "pt: " << pt << "\n";
@@ -202,7 +236,7 @@ int log_replay(char *filepath)
 
             usleep(microseconds);
         } else {
-            usleep(300000);
+            usleep(DEFAULT_INTERVIAL_CURRENT);
         }
 
         cout << line << endl;
@@ -220,7 +254,9 @@ int log_replay(char *filepath)
                     usleep(100);
                 }
             }
-        } else if (ACTION_QUIT) {
+        }
+
+        if (ACTION_QUIT) {
             fstream f;
             f.open(curr_config_file_path.string(), std::fstream::out | std::fstream::trunc);
             f << filein.tellg();
