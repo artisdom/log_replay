@@ -11,6 +11,22 @@ using namespace std;
 namespace fs = boost::filesystem;
 namespace bt = boost::posix_time;
 
+static struct termios orig_termios;  /* TERMinal I/O Structure */
+
+int tty_reset(void)
+{
+    /* flush and reset */
+    if (tcsetattr(0, TCSAFLUSH, &orig_termios) < 0)
+        return -1;
+    return 0;
+}
+
+/* exit handler for tty reset */
+void tty_atexit(void)  /* NOTE: If the program terminates due to a signal   */
+{                      /* this code will not run.  This is for exit()'s     */
+    tty_reset();        /* only.  For resetting the terminal after a signal, */
+}                      /* a signal handler which calls tty_reset is needed. */
+
 const std::locale formats[] = {
     std::locale(std::locale::classic(), new bt::time_input_facet("%Y-%m-%d %H:%M:%S")),
     std::locale(std::locale::classic(), new bt::time_input_facet("%Y/%m/%d %H:%M:%S")),
@@ -243,6 +259,11 @@ int main(int argc, char *argv[])
         usage(argv);
         return -1;
     }
+
+    /* store current tty settings in orig_termios */
+    tcgetattr(0, &orig_termios);
+    /* register the tty reset with the exit handler */
+    atexit(tty_atexit);
 
     create_config_dir();
 
