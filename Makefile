@@ -5,4 +5,4 @@ all:
 	g++ -std=c++11 test_boost3.cpp -o test_boost3 -lboost_filesystem -lboost_system
 	g++ test_boost_ptime_duration.cpp -o test_boost_ptime_duration -lboost_date_time
 install:
-	cp -v log_replay ~/bin/
+	cp -vf log_replay ~/bin/
