@@ -39,10 +39,10 @@ const size_t formats_n = sizeof(formats) / sizeof(formats[0]);
 
 const long MAX_INTERVIAL = 1000000; //1s
 long MAX_INTERVIAL_CURRENT = MAX_INTERVIAL;
-const long MAX_INTERVIAL_INCREASE_STEP = 1000000; //1s
+const long MAX_INTERVIAL_INCREASE_STEP = 300000; //300ms
 
 const long DEFAULT_INTERVIAL = 300000; //300ms
-const long DEFAULT_INTERVIAL_INCREASE_STEP = 300000; //300ms
+const long DEFAULT_INTERVIAL_INCREASE_STEP = 100000; //100ms
 long DEFAULT_INTERVIAL_CURRENT = DEFAULT_INTERVIAL;
 
 bool get_ptime(const std::string &s, bt::ptime& pt)
